@@ -59,4 +59,5 @@ public class DeserializationTests {
         Assert.assertNotNull(jsonApiEnvelope.getData());
         Assert.assertEquals(false, jsonApiEnvelope.getData().isBool());
     }
+
 }

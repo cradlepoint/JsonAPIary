@@ -18,7 +18,7 @@ public class SingleLinkNode {
     private Long id;
 
     @JsonApiAttribute("element")
-    @JsonProperty("value")
+    @JsonProperty("element")
     private String value;
 
     @JsonApiRelationship

@@ -2,6 +2,7 @@ package test.com.cradlepoint.jsonapiary;
 
 import com.cradlepoint.jsonapiary.JsonApiModule;
 import com.cradlepoint.jsonapiary.envelopes.JsonApiEnvelope;
+import com.cradlepoint.jsonapiary.envelopes.JsonApiSerializationOptions;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -672,6 +673,103 @@ public class SerializationTests {
     }
 
     @Test
+    public void listOfObjectsWithIncludeds_OmittedIncludedTest() throws Exception {
+        // Init Test Objects //
+        List<SimpleObject> simpleObjectList = new ArrayList<SimpleObject>();
+        for(int i1 = 0; i1 < 4; i1++) {
+            SimpleSubObject simpleSubObject = new SimpleSubObject();
+            simpleSubObject.setId("Object Number " + i1);
+            simpleSubObject.setBaz("Baz " + (i1 * i1));
+
+            SimpleObject simpleObject = new SimpleObject();
+            simpleObject.setId((i1 * 10l));
+            simpleObject.setAttribute("an attribute!");
+            simpleObject.setThing2(simpleSubObject);
+
+            simpleObjectList.add(simpleObject);
+        }
+
+        // Serialize and Verify //
+        String json  = objectMapper.writeValueAsString(new JsonApiEnvelope<List<SimpleObject>>(simpleObjectList, JsonApiSerializationOptions.OMIT_INCLUDED_BLOCK));
+        Assert.assertNotNull(json);
+        Assert.assertTrue(json.equals("{\n" +
+                "  \"data\" : [ {\n" +
+                "    \"id\" : \"0\",\n" +
+                "    \"type\" : \"SimpleObject\",\n" +
+                "    \"attributes\" : {\n" +
+                "      \"objectAttribute\" : \"an attribute!\"\n" +
+                "    },\n" +
+                "    \"meta\" : {\n" +
+                "      \"catchAllThing\" : \"this should ahve been caught\",\n" +
+                "      \"objectBlah\" : \"blah!\"\n" +
+                "    },\n" +
+                "    \"relationships\" : {\n" +
+                "      \"someOtherRelationship\" : {\n" +
+                "        \"data\" : {\n" +
+                "          \"id\" : \"Object Number 0\",\n" +
+                "          \"type\" : \"TypeOverride\"\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }, {\n" +
+                "    \"id\" : \"10\",\n" +
+                "    \"type\" : \"SimpleObject\",\n" +
+                "    \"attributes\" : {\n" +
+                "      \"objectAttribute\" : \"an attribute!\"\n" +
+                "    },\n" +
+                "    \"meta\" : {\n" +
+                "      \"catchAllThing\" : \"this should ahve been caught\",\n" +
+                "      \"objectBlah\" : \"blah!\"\n" +
+                "    },\n" +
+                "    \"relationships\" : {\n" +
+                "      \"someOtherRelationship\" : {\n" +
+                "        \"data\" : {\n" +
+                "          \"id\" : \"Object Number 1\",\n" +
+                "          \"type\" : \"TypeOverride\"\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }, {\n" +
+                "    \"id\" : \"20\",\n" +
+                "    \"type\" : \"SimpleObject\",\n" +
+                "    \"attributes\" : {\n" +
+                "      \"objectAttribute\" : \"an attribute!\"\n" +
+                "    },\n" +
+                "    \"meta\" : {\n" +
+                "      \"catchAllThing\" : \"this should ahve been caught\",\n" +
+                "      \"objectBlah\" : \"blah!\"\n" +
+                "    },\n" +
+                "    \"relationships\" : {\n" +
+                "      \"someOtherRelationship\" : {\n" +
+                "        \"data\" : {\n" +
+                "          \"id\" : \"Object Number 2\",\n" +
+                "          \"type\" : \"TypeOverride\"\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }, {\n" +
+                "    \"id\" : \"30\",\n" +
+                "    \"type\" : \"SimpleObject\",\n" +
+                "    \"attributes\" : {\n" +
+                "      \"objectAttribute\" : \"an attribute!\"\n" +
+                "    },\n" +
+                "    \"meta\" : {\n" +
+                "      \"catchAllThing\" : \"this should ahve been caught\",\n" +
+                "      \"objectBlah\" : \"blah!\"\n" +
+                "    },\n" +
+                "    \"relationships\" : {\n" +
+                "      \"someOtherRelationship\" : {\n" +
+                "        \"data\" : {\n" +
+                "          \"id\" : \"Object Number 3\",\n" +
+                "          \"type\" : \"TypeOverride\"\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }\n" +
+                "  } ]\n" +
+                "}"));
+    }
+
+    @Test
     public void typeWithLinkStringHappyPathTest() throws Exception {
         // Init Test Objects //
         TypeWithALink typeWithALink = new TypeWithALink();
@@ -813,13 +911,13 @@ public class SerializationTests {
         Assert.assertNotNull(json);
         Assert.assertTrue(json.equals("{\n" +
                 "  \"id\" : 1,\n" +
-                "  \"value\" : \"ONE\",\n" +
+                "  \"element\" : \"ONE\",\n" +
                 "  \"link\" : {\n" +
                 "    \"id\" : 2,\n" +
-                "    \"value\" : \"2nd\",\n" +
+                "    \"element\" : \"2nd\",\n" +
                 "    \"link\" : {\n" +
                 "      \"id\" : 3,\n" +
-                "      \"value\" : \"tertiary.\",\n" +
+                "      \"element\" : \"tertiary.\",\n" +
                 "      \"link\" : null\n" +
                 "    }\n" +
                 "  }\n" +
