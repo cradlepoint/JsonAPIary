@@ -2,6 +2,7 @@ package test.com.cradlepoint.jsonapiary;
 
 import com.cradlepoint.jsonapiary.JsonApiModule;
 import com.cradlepoint.jsonapiary.envelopes.JsonApiEnvelope;
+import com.cradlepoint.jsonapiary.envelopes.JsonApiSerializationOptions;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -170,6 +171,41 @@ public class ComboTests {
         JsonApiEnvelope<List<SimpleObject>> deserializedObject = objectMapper.readValue(json, JsonApiEnvelope.class);
         Assert.assertNotNull(deserializedObject);
         Assert.assertTrue(jsonApiEnvelope.equals(deserializedObject));
+    }
+
+    @Test
+    public void serializeAndDeserializeWithoutIncludedTest() throws Exception {
+        // Init Test Objects //
+        SingleLinkNode tailNode = new SingleLinkNode();
+        tailNode.setId(222222l);
+        tailNode.setValue("the last node...");
+
+        SingleLinkNode headNode = new SingleLinkNode();
+        headNode.setId(111111l);
+        headNode.setValue("the first node!");
+        headNode.setLinkNode(tailNode);
+
+        // Serialize! Without includeds! //
+        String json = objectMapper.writeValueAsString(new JsonApiEnvelope<SingleLinkNode>(headNode, JsonApiSerializationOptions.OMIT_INCLUDED_BLOCK));
+        Assert.assertNotNull(json);
+        Assert.assertTrue(json.contains(headNode.getValue()));
+        Assert.assertFalse(json.contains("included"));
+        Assert.assertFalse(json.contains(tailNode.getValue()));
+
+        // Verify //
+        JsonApiEnvelope<SingleLinkNode> result = objectMapper.readValue(json, JsonApiEnvelope.class);
+        Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getData());
+
+        SingleLinkNode resultNode = result.getData();
+        Assert.assertEquals(headNode.getId(), resultNode.getId());
+        Assert.assertEquals(headNode.getValue(), resultNode.getValue());
+
+        Assert.assertNotNull(headNode.getLinkNode());
+        SingleLinkNode resultTailNode = resultNode.getLinkNode();
+        Assert.assertEquals(tailNode.getId(), resultTailNode.getId());
+        Assert.assertNull(resultTailNode.getValue());
+        Assert.assertNull(resultTailNode.getLinkNode());
     }
 
 }

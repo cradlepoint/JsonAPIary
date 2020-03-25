@@ -3,6 +3,7 @@ package com.cradlepoint.jsonapiary.serializers;
 import com.cradlepoint.jsonapiary.constants.JsonApiKeyConstants;
 import com.cradlepoint.jsonapiary.enums.JsonApiObjectContext;
 import com.cradlepoint.jsonapiary.envelopes.JsonApiEnvelope;
+import com.cradlepoint.jsonapiary.envelopes.JsonApiSerializationOptions;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
@@ -67,7 +68,7 @@ public class JsonApiEnvelopeSerializer extends StdSerializer<JsonApiEnvelope> {
         }
 
         // Write out the expanded "included" objects //
-        if(!includes.isEmpty()) {
+        if(!jsonApiEnvelope.containsOption(JsonApiSerializationOptions.OMIT_INCLUDED_BLOCK) && !includes.isEmpty()) {
             Set<Object> currentIncludes = new HashSet<Object>();
             currentIncludes.addAll(includes);
             includes.add(jsonApiEnvelope.getData()); // To prevent the "data" object from being re-serialized

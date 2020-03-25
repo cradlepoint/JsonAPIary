@@ -2,13 +2,11 @@ package com.cradlepoint.jsonapiary.envelopes;
 
 import com.cradlepoint.jsonapiary.annotations.JsonApiType;
 import com.cradlepoint.jsonapiary.constants.JsonApiKeyConstants;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.net.URL;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class JsonApiEnvelope<T> {
 
@@ -34,17 +32,21 @@ public class JsonApiEnvelope<T> {
     @JsonProperty(JsonApiKeyConstants.META_DATA_KEY)
     private Map<String, String> meta;
 
-    /////////////////
-    // Constructor //
-    /////////////////
+    @JsonIgnore
+    private List<JsonApiSerializationOptions> options;
+
+    //////////////////
+    // Constructors //
+    //////////////////
 
     /**
      * Default void constructor
      */
     public JsonApiEnvelope() {
-        data = null;
-        links = new Hashtable<String, URL>();
-        meta = new Hashtable<String, String>();
+        this.data = null;
+        this.links = new Hashtable<String, URL>();
+        this.meta = new Hashtable<String, String>();
+        this.options = new ArrayList<JsonApiSerializationOptions>();
     }
 
     /**
@@ -53,8 +55,22 @@ public class JsonApiEnvelope<T> {
     public JsonApiEnvelope(T data) {
         validateTypeJsonAPIAnnotated(data);
         this.data = data;
-        links = new Hashtable<String, URL>();
-        meta = new Hashtable<String, String>();
+        this.links = new Hashtable<String, URL>();
+        this.meta = new Hashtable<String, String>();
+        this.options = new ArrayList<JsonApiSerializationOptions>();
+    }
+
+    /**
+     * Constructor
+     * @param data
+     * @param options
+     */
+    public JsonApiEnvelope(T data, JsonApiSerializationOptions... options) {
+        validateTypeJsonAPIAnnotated(data);
+        this.data = data;
+        this.links = new Hashtable<String, URL>();
+        this.meta = new Hashtable<String, String>();
+        this.options = Arrays.asList(options);
     }
 
     /////////////////////////
@@ -114,6 +130,15 @@ public class JsonApiEnvelope<T> {
      */
     public void addMeta(String key, String value) {
         meta.put(key, value);
+    }
+
+    /**
+     * Returns whether or not the Envelope contains the given option flag
+     * @param option
+     * @return
+     */
+    public boolean containsOption(JsonApiSerializationOptions option) {
+        return this.options.contains(option);
     }
 
     /////////////////////

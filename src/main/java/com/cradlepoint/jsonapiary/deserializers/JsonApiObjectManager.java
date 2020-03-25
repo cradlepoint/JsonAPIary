@@ -251,15 +251,14 @@ class JsonApiObjectManager {
                         ResourceLinkage relationshipResourceLinkage = DeserializationUtilities.generateResourceLinkageFromNode(
                                 relationshipNode.get(JsonApiKeyConstants.DATA_KEY), jsonApiTypeMap);
 
-                        if (!includedsSet.containsKey(relationshipResourceLinkage)) {
-                            // Relationship was not included in the JSON.. leave it as null //
-                            continue;
-                        }
-
                         // Generate the Relationship Object //
                         Object relationshipObject = lazyFetchObject(
                                 relationshipResourceLinkage,
                                 deserializationContext);
+                        if(relationshipObject == null) {
+                            // There is no "managed" object for this relationship, just generate a new un-managed "blank" //
+                            relationshipObject = DeserializationUtilities.generateObjectFromNode(relationshipNode.get(JsonApiKeyConstants.DATA_KEY), jsonApiTypeMap);
+                        }
 
                         // Set the Relationship Object on the Data object! //
                         if (relationshipObject != null) {
