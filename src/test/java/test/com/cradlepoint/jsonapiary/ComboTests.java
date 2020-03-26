@@ -33,7 +33,8 @@ public class ComboTests {
                 SimpleNestedSubObject.class,
                 SingleLinkNode.class,
                 ABaseClass.class,
-                AChildClass.class);
+                AChildClass.class,
+                SimpleObjectWithListRelationship.class);
 
         objectMapper = new ObjectMapper();
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
@@ -206,6 +207,54 @@ public class ComboTests {
         Assert.assertEquals(tailNode.getId(), resultTailNode.getId());
         Assert.assertNull(resultTailNode.getValue());
         Assert.assertNull(resultTailNode.getLinkNode());
+    }
+
+    @Test
+    public void serializeAndDeserializeRelationshipListWithoutIncludedTest() throws Exception {
+        // Init Test Objects //
+        SimpleObjectWithListRelationship testSub1 = new SimpleObjectWithListRelationship();
+        testSub1.setId("two");
+        testSub1.setText("secondary");
+
+        SimpleObjectWithListRelationship testSub2 = new SimpleObjectWithListRelationship();
+        testSub2.setId("thr33");
+        testSub2.setText("final");
+
+        List<SimpleObjectWithListRelationship> subs = new ArrayList<>();
+        subs.add(testSub1);
+        subs.add(testSub2);
+
+        SimpleObjectWithListRelationship testMain = new SimpleObjectWithListRelationship();
+        testMain.setId("1");
+        testMain.setText("main");
+        testMain.setRelations(subs);
+
+        // Serialize! Without includeds! //
+        String json = objectMapper.writeValueAsString(new JsonApiEnvelope<SimpleObjectWithListRelationship>(testMain, JsonApiSerializationOptions.OMIT_INCLUDED_BLOCK));
+        Assert.assertNotNull(json);
+        Assert.assertTrue(json.contains(testMain.getText()));
+        Assert.assertFalse(json.contains("included"));
+        Assert.assertTrue(json.contains(testSub1.getId()));
+        Assert.assertFalse(json.contains(testSub1.getText()));
+        Assert.assertTrue(json.contains(testSub2.getId()));
+        Assert.assertFalse(json.contains(testSub2.getText()));
+
+        // Verify //
+        JsonApiEnvelope<SimpleObjectWithListRelationship> result = objectMapper.readValue(json, JsonApiEnvelope.class);
+        Assert.assertNotNull(result);
+        SimpleObjectWithListRelationship resultMainObject = result.getData();
+        Assert.assertNotNull(resultMainObject);
+        Assert.assertEquals(testMain.getId(), resultMainObject.getId());
+        Assert.assertEquals(testMain.getText(), resultMainObject.getText());
+
+        Assert.assertEquals(2, resultMainObject.getRelations().size());
+        SimpleObjectWithListRelationship subObject1 = resultMainObject.getRelations().get(0);
+        Assert.assertEquals(testSub1.getId(), subObject1.getId());
+        Assert.assertNull(subObject1.getText());
+
+        SimpleObjectWithListRelationship subObject2 = resultMainObject.getRelations().get(1);
+        Assert.assertEquals(testSub2.getId(), subObject2.getId());
+        Assert.assertNull(subObject2.getText());
     }
 
 }

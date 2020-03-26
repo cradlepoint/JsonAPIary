@@ -232,9 +232,14 @@ class JsonApiObjectManager {
                                     relationshipArrayElementNode, jsonApiTypeMap);
 
                             // Build up the List of things //
-                            relationshipList.add(lazyFetchObject(
+                            Object relationshipObject = lazyFetchObject(
                                     relationshipResourceLinkage,
-                                    deserializationContext));
+                                    deserializationContext);
+                            if(relationshipObject == null) {
+                                // There is no "managed" object for this relationship, just generate a new un-managed "blank" //
+                                relationshipObject = DeserializationUtilities.generateObjectFromNode(relationshipArrayElementNode, jsonApiTypeMap);
+                            }
+                            relationshipList.add(relationshipObject);
 
                         }
 
