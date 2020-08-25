@@ -43,9 +43,9 @@
 		<projectVersion>0.0.1-SNAPSHOT</projectVersion>
 
 		<!-- Dependency Versions -->
-		<jackson.version>2.9.10.3</jackson.version>
-		<apache.commons.version>3.7</apache.commons.version>
-		<junit.version>4.12</junit.version>
+		<jackson.version>2.11.2</jackson.version>
+		<apache.commons.version>3.11</apache.commons.version>
+		<junit.version>4.13</junit.version>
 	</properties>
 
 	<dependencyManagement>

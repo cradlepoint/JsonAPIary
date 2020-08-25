@@ -5,6 +5,7 @@ import com.cradlepoint.jsonapiary.types.JsonApiError;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import test.com.cradlepoint.jsonapiary.pojos.*;
@@ -180,39 +181,11 @@ public class JsonApiErrorTests {
         // Serialize and Verify //
         String json =  objectMapper.writeValueAsString(jsonApiError);
 
-        Assert.assertTrue(json.equals("{\n" +
-                "  \"errors\" : [ {\n" +
-                "    \"links\" : {\n" +
-                "      \"cradlepoint\" : \"https://cradlepoint.com/\"\n" +
-                "    },\n" +
-                "    \"code\" : \"0\",\n" +
-                "    \"title\" : \"loop #0 error\"\n" +
-                "  }, {\n" +
-                "    \"links\" : {\n" +
-                "      \"cradlepoint\" : \"https://cradlepoint.com/\"\n" +
-                "    },\n" +
-                "    \"code\" : \"3\",\n" +
-                "    \"title\" : \"loop #3 error\"\n" +
-                "  }, {\n" +
-                "    \"links\" : {\n" +
-                "      \"cradlepoint\" : \"https://cradlepoint.com/\"\n" +
-                "    },\n" +
-                "    \"code\" : \"1\",\n" +
-                "    \"title\" : \"loop #1 error\"\n" +
-                "  }, {\n" +
-                "    \"links\" : {\n" +
-                "      \"cradlepoint\" : \"https://cradlepoint.com/\"\n" +
-                "    },\n" +
-                "    \"code\" : \"4\",\n" +
-                "    \"title\" : \"loop #4 error\"\n" +
-                "  }, {\n" +
-                "    \"links\" : {\n" +
-                "      \"cradlepoint\" : \"https://cradlepoint.com/\"\n" +
-                "    },\n" +
-                "    \"code\" : \"2\",\n" +
-                "    \"title\" : \"loop #2 error\"\n" +
-                "  } ]\n" +
-                "}"));
+        Assert.assertEquals(5, StringUtils.countMatches(json, "\"cradlepoint\" : \"https://cradlepoint.com/\""));
+        for(int i1 = 0; i1 < 5; i1++) {
+            Assert.assertTrue(json.contains("\"code\" : \"" + i1 + "\""));
+            Assert.assertTrue(json.contains("\"title\" : \"loop #" + i1 + " error\"\n"));
+        }
     }
 
 }
