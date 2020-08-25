@@ -6,7 +6,6 @@ import com.cradlepoint.jsonapiary.enums.JsonApiObjectContext;
 import com.cradlepoint.jsonapiary.serializers.helpers.JsonApiAnnotationAnalyzer;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
 import java.io.IOException;
@@ -89,8 +88,7 @@ class JsonApiSerializer {
                 if(object == null) {
                     jsonGenerator.writeNull();
                 } else {
-                    JsonSerializer dataSerializer = serializerProvider.findValueSerializer(object.getClass());
-                    dataSerializer.serialize(object, jsonGenerator, serializerProvider);
+                    serializerProvider.defaultSerializeValue(object, jsonGenerator);
                 }
                 break;
             default:
@@ -259,12 +257,8 @@ class JsonApiSerializer {
             String issue = "Found multiple Fields and/or Methods tagged with @JsonApiId in type: " +
                     jsonApiObject.getClass().getName() + " !!!";
             throw JsonMappingException.from(jsonGenerator, issue);
-        } else if(idMap.size() == 1) {
+        } else if(idMap.size() == 1 && idMap.get(idMap.keySet().toArray()[0]) != null) {
             jsonGenerator.writeStringField(JsonApiKeyConstants.ID_KEY, idMap.get(idMap.keySet().toArray()[0]).toString());
-        } else {
-            String issue = "Type (" + jsonApiObject.getClass().getName() + ") does not contain a JsonAPI id! " +
-                    "An attribute must be annotated with @JsonApiId!";
-            throw new IllegalArgumentException(issue);
         }
 
         // Serialize the Type //

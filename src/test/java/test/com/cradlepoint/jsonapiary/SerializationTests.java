@@ -36,7 +36,8 @@ public class SerializationTests {
                 SingleLinkNode.class,
                 ABaseClass.class,
                 AChildClass.class,
-                TypeWithALink.class);
+                TypeWithALink.class,
+                ObjectWithMapAttribute.class);
 
         objectMapper = new ObjectMapper();
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
@@ -919,6 +920,27 @@ public class SerializationTests {
                 "      \"id\" : 3,\n" +
                 "      \"element\" : \"tertiary.\",\n" +
                 "      \"link\" : null\n" +
+                "    }\n" +
+                "  }\n" +
+                "}"));
+    }
+
+    @Test
+    public void objectWithMapAttributeTest() throws Exception {
+        // Init Test Objects //
+        ObjectWithMapAttribute object = new ObjectWithMapAttribute();
+        object.addToMap("foobar", "and grill");
+
+        // Serialize //
+        String json = objectMapper.writeValueAsString(new JsonApiEnvelope<ObjectWithMapAttribute>(object));
+
+        Assert.assertTrue(json.equals("{\n" +
+                "  \"data\" : {\n" +
+                "    \"type\" : \"mapAttributeObject\",\n" +
+                "    \"meta\" : {\n" +
+                "      \"someMap\" : {\n" +
+                "        \"foobar\" : \"and grill\"\n" +
+                "      }\n" +
                 "    }\n" +
                 "  }\n" +
                 "}"));
