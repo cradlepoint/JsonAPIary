@@ -1,8 +1,8 @@
 package test.com.cradlepoint.jsonapiary;
 
 import com.cradlepoint.jsonapiary.JsonApiModule;
-import com.cradlepoint.jsonapiary.envelopes.JsonApiEnvelope;
-import com.cradlepoint.jsonapiary.envelopes.JsonApiSerializationOptions;
+import com.cradlepoint.jsonapiary.envelopes.SimpleJsonApiEnvelope;
+import com.cradlepoint.jsonapiary.envelopes.JsonApiOptions;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -12,6 +12,7 @@ import test.com.cradlepoint.jsonapiary.pojos.*;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ComboTests {
@@ -27,17 +28,18 @@ public class ComboTests {
     /////////////////
 
     public ComboTests() {
-        JsonApiModule jsonApiModule = new JsonApiModule(
+        JsonApiModule jsonApiModule = new JsonApiModule(Arrays.asList(
                 SimpleObject.class,
                 SimpleSubObject.class,
                 SimpleNestedSubObject.class,
                 SingleLinkNode.class,
                 ABaseClass.class,
                 AChildClass.class,
-                SimpleObjectWithListRelationship.class);
+                SimpleObjectWithListRelationship.class));
 
         objectMapper = new ObjectMapper();
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        objectMapper.enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         objectMapper.registerModule(jsonApiModule);
     }
@@ -53,10 +55,10 @@ public class ComboTests {
         simpleObject.setThing2(simpleSubObject);
 
         // First Serialize //
-        String serialization = objectMapper.writeValueAsString(new JsonApiEnvelope<SimpleObject>(simpleObject));
+        String serialization = objectMapper.writeValueAsString(new SimpleJsonApiEnvelope<SimpleObject>(simpleObject));
 
         // Then try to Deserialize the output back! //
-        JsonApiEnvelope<SimpleObject> deserializedObject = objectMapper.readValue(serialization, JsonApiEnvelope.class);
+        SimpleJsonApiEnvelope<SimpleObject> deserializedObject = objectMapper.readValue(serialization, SimpleJsonApiEnvelope.class);
 
         Assert.assertTrue(simpleObject.equals(deserializedObject.getData()));
     }
@@ -69,10 +71,10 @@ public class ComboTests {
         simpleSubObject.setNestedThing(simpleNestedSubObject);
 
         // First Serialize //
-        String serialization = objectMapper.writeValueAsString(new JsonApiEnvelope<SimpleSubObject>(simpleSubObject));
+        String serialization = objectMapper.writeValueAsString(new SimpleJsonApiEnvelope<SimpleSubObject>(simpleSubObject));
 
         // Then try to Deserialize the output back! //
-        JsonApiEnvelope<SimpleSubObject> deserializedObject = objectMapper.readValue(serialization, JsonApiEnvelope.class);
+        SimpleJsonApiEnvelope<SimpleSubObject> deserializedObject = objectMapper.readValue(serialization, SimpleJsonApiEnvelope.class);
 
         Assert.assertTrue(simpleSubObject.equals(deserializedObject.getData()));
     }
@@ -90,10 +92,10 @@ public class ComboTests {
         simpleNestedSubObject.setMetaThing(new SimpleObject());
 
         // First Serialize //
-        String serialization = objectMapper.writeValueAsString(new JsonApiEnvelope<SimpleObject>(simpleObject));
+        String serialization = objectMapper.writeValueAsString(new SimpleJsonApiEnvelope<SimpleObject>(simpleObject));
 
         // Then try to Deserialize the output back! //
-        JsonApiEnvelope<SimpleObject> deserializedObject = objectMapper.readValue(serialization, JsonApiEnvelope.class);
+        SimpleJsonApiEnvelope<SimpleObject> deserializedObject = objectMapper.readValue(serialization, SimpleJsonApiEnvelope.class);
 
         Assert.assertTrue(simpleObject.equals(deserializedObject.getData()));
     }
@@ -104,7 +106,7 @@ public class ComboTests {
         SimpleObject simpleObject1 = new SimpleObject();
         simpleObject1.setId(1l);
         simpleObject1.setAttribute("number: O.N.E.");
-        JsonApiEnvelope<SimpleObject> jsonApiEnvelope = new JsonApiEnvelope<SimpleObject>(simpleObject1);
+        SimpleJsonApiEnvelope<SimpleObject> jsonApiEnvelope = new SimpleJsonApiEnvelope<SimpleObject>(simpleObject1);
 
         jsonApiEnvelope.addMeta("top-LEVEL-meta-THING", "this is a fancy thing!");
         jsonApiEnvelope.addMeta("helllllo", "good! buy!");
@@ -117,7 +119,7 @@ public class ComboTests {
         Assert.assertNotNull(json);
 
         // Then, try to deserialize back into an equal Object //
-        JsonApiEnvelope<SimpleObject> deserializedObject = objectMapper.readValue(json, JsonApiEnvelope.class);
+        SimpleJsonApiEnvelope<SimpleObject> deserializedObject = objectMapper.readValue(json, SimpleJsonApiEnvelope.class);
         Assert.assertNotNull(deserializedObject);
         Assert.assertTrue(jsonApiEnvelope.equals(deserializedObject));
     }
@@ -134,14 +136,14 @@ public class ComboTests {
         aChildClass.setWhatDoIHave(simpleObject);
         aChildClass.setWhaz("this is (ComboTests) whaz!");
         aChildClass.setMetaInt(210);
-        JsonApiEnvelope<AChildClass> jsonApiEnvelope = new JsonApiEnvelope<AChildClass>(aChildClass);
+        SimpleJsonApiEnvelope<AChildClass> jsonApiEnvelope = new SimpleJsonApiEnvelope<AChildClass>(aChildClass);
 
         // First, serialize //
         String json = objectMapper.writeValueAsString(jsonApiEnvelope);
         Assert.assertNotNull(json);
 
         // Then, attempt to deserialize and verify //
-        JsonApiEnvelope<AChildClass> deserializedObject = objectMapper.readValue(json, JsonApiEnvelope.class);
+        SimpleJsonApiEnvelope<AChildClass> deserializedObject = objectMapper.readValue(json, SimpleJsonApiEnvelope.class);
         Assert.assertNotNull(deserializedObject);
         Assert.assertTrue(jsonApiEnvelope.equals(deserializedObject));
     }
@@ -162,14 +164,14 @@ public class ComboTests {
 
             simpleObjectList.add(simpleObject);
         }
-        JsonApiEnvelope<List<SimpleObject>> jsonApiEnvelope = new JsonApiEnvelope<List<SimpleObject>>(simpleObjectList);
+        SimpleJsonApiEnvelope<List<SimpleObject>> jsonApiEnvelope = new SimpleJsonApiEnvelope<List<SimpleObject>>(simpleObjectList);
 
         // Serialize! //
         String json = objectMapper.writeValueAsString(jsonApiEnvelope);
         Assert.assertNotNull(json);
 
         // Verify!! //
-        JsonApiEnvelope<List<SimpleObject>> deserializedObject = objectMapper.readValue(json, JsonApiEnvelope.class);
+        SimpleJsonApiEnvelope<List<SimpleObject>> deserializedObject = objectMapper.readValue(json, SimpleJsonApiEnvelope.class);
         Assert.assertNotNull(deserializedObject);
         Assert.assertTrue(jsonApiEnvelope.equals(deserializedObject));
     }
@@ -187,14 +189,14 @@ public class ComboTests {
         headNode.setLinkNode(tailNode);
 
         // Serialize! Without includeds! //
-        String json = objectMapper.writeValueAsString(new JsonApiEnvelope<SingleLinkNode>(headNode, JsonApiSerializationOptions.OMIT_INCLUDED_BLOCK));
+        String json = objectMapper.writeValueAsString(new SimpleJsonApiEnvelope<SingleLinkNode>(headNode, JsonApiOptions.OMIT_INCLUDED_BLOCK));
         Assert.assertNotNull(json);
         Assert.assertTrue(json.contains(headNode.getValue()));
         Assert.assertFalse(json.contains("included"));
         Assert.assertFalse(json.contains(tailNode.getValue()));
 
         // Verify //
-        JsonApiEnvelope<SingleLinkNode> result = objectMapper.readValue(json, JsonApiEnvelope.class);
+        SimpleJsonApiEnvelope<SingleLinkNode> result = objectMapper.readValue(json, SimpleJsonApiEnvelope.class);
         Assert.assertNotNull(result);
         Assert.assertNotNull(result.getData());
 
@@ -230,7 +232,7 @@ public class ComboTests {
         testMain.setRelations(subs);
 
         // Serialize! Without includeds! //
-        String json = objectMapper.writeValueAsString(new JsonApiEnvelope<SimpleObjectWithListRelationship>(testMain, JsonApiSerializationOptions.OMIT_INCLUDED_BLOCK));
+        String json = objectMapper.writeValueAsString(new SimpleJsonApiEnvelope<SimpleObjectWithListRelationship>(testMain, JsonApiOptions.OMIT_INCLUDED_BLOCK));
         Assert.assertNotNull(json);
         Assert.assertTrue(json.contains(testMain.getText()));
         Assert.assertFalse(json.contains("included"));
@@ -240,7 +242,7 @@ public class ComboTests {
         Assert.assertFalse(json.contains(testSub2.getText()));
 
         // Verify //
-        JsonApiEnvelope<SimpleObjectWithListRelationship> result = objectMapper.readValue(json, JsonApiEnvelope.class);
+        SimpleJsonApiEnvelope<SimpleObjectWithListRelationship> result = objectMapper.readValue(json, SimpleJsonApiEnvelope.class);
         Assert.assertNotNull(result);
         SimpleObjectWithListRelationship resultMainObject = result.getData();
         Assert.assertNotNull(resultMainObject);

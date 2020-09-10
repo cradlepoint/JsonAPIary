@@ -9,8 +9,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -69,18 +67,8 @@ class JsonApiSerializer {
             case LINK:
                 if (object == null) {
                     jsonGenerator.writeNull();
-                } else if(object.getClass() == URL.class) {
-                    jsonGenerator.writeString(object.toString());
                 } else {
-                    try {
-                        URL url = new URL(object.toString());
-                        jsonGenerator.writeString(url.toString());
-                    } catch(MalformedURLException e) {
-                        String issue = "The value returned by the \"toString()\" method on the object of type: " +
-                                object.getClass().getName() + " does not parse out into a valid URL. The other option " +
-                                " is to decorate an attribute of type " + URL.class.getName() + " as the link.";
-                        throw new IllegalArgumentException(issue, e);
-                    }
+                    jsonGenerator.writeString(object.toString());
                 }
                 break;
             case ATTRIBUTE:
@@ -103,8 +91,10 @@ class JsonApiSerializer {
     /**
      * Serializes sub-object according to JsonAPI spec
      * @param jsonApiObject
+     * @param serializationContext
      * @param jsonGenerator
      * @param serializerProvider
+     * @return
      * @throws IOException
      */
     public Set<Object> serializeJsonApiObject(
