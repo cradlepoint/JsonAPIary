@@ -1,17 +1,17 @@
 package test.com.cradlepoint.jsonapiary;
 
 import com.cradlepoint.jsonapiary.JsonApiModule;
-import com.cradlepoint.jsonapiary.envelopes.SimpleJsonApiEnvelope;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.junit.Assert;
 import org.junit.Test;
+import test.com.cradlepoint.jsonapiary.envelopes.CustomTestEnvelope;
 import test.com.cradlepoint.jsonapiary.pojos.*;
 
 import java.util.Arrays;
 
-public class DeserializationTests {
+public class CustomEnvelopeTests {
 
     ////////////////
     // Attributes //
@@ -23,14 +23,15 @@ public class DeserializationTests {
     // Constructor //
     /////////////////
 
-    public DeserializationTests() {
-        JsonApiModule jsonApiModule = new JsonApiModule(Arrays.asList(
+    public CustomEnvelopeTests() {
+        JsonApiModule jsonApiModule = new JsonApiModule(CustomTestEnvelope.class, Arrays.asList(
                 SimpleObject.class,
                 SimpleSubObject.class,
                 SimpleNestedSubObject.class,
                 SingleLinkNode.class,
                 ABaseClass.class,
                 AChildClass.class,
+                SimpleObjectWithListRelationship.class,
                 TypeWithABoolean.class));
 
         objectMapper = new ObjectMapper();
@@ -45,22 +46,30 @@ public class DeserializationTests {
     ///////////
 
     @Test
-    public void deserializeObjectWithoutIdTest() throws Exception {
+    public void serializationDeserializationTest() throws Exception {
         // Init Test Objects //
-        String json = "{\n" +
+        TypeWithABoolean testObject = new TypeWithABoolean();
+        testObject.setId(83701);
+        testObject.setBool(true);
+
+        // Serialize! //
+        String json = objectMapper.writeValueAsString(new CustomTestEnvelope<TypeWithABoolean>(testObject));
+        Assert.assertNotNull(json);
+        Assert.assertTrue(json.equals("{\n" +
                 "  \"data\" : {\n" +
+                "    \"id\" : \"83701\",\n" +
                 "    \"type\" : \"TypeWithABoolean\",\n" +
                 "    \"attributes\" : {\n" +
-                "      \"bool\" : false\n" +
+                "      \"bool\" : true\n" +
                 "    }\n" +
                 "  }\n" +
-                "}";
+                "}"));
 
-        // Deserialize and Verify //
-        SimpleJsonApiEnvelope<TypeWithABoolean> jsonApiEnvelope = objectMapper.readValue(json, SimpleJsonApiEnvelope.class);
-        Assert.assertNotNull(jsonApiEnvelope);
-        Assert.assertNotNull(jsonApiEnvelope.getData());
-        Assert.assertEquals(false, jsonApiEnvelope.getData().isBool());
+        // Deserialize! //
+        CustomTestEnvelope<TypeWithABoolean> deserializedObject = objectMapper.readValue(json, CustomTestEnvelope.class);
+        Assert.assertNotNull(deserializedObject);
+        Assert.assertEquals(testObject.getId(), deserializedObject.getData().getId());
+        Assert.assertEquals(testObject.isBool(), deserializedObject.getData().isBool());
     }
 
 }

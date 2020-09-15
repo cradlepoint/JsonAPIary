@@ -1,6 +1,7 @@
 package com.cradlepoint.jsonapiary.deserializers.helpers;
 
 import com.cradlepoint.jsonapiary.envelopes.JsonApiEnvelope;
+import com.cradlepoint.jsonapiary.envelopes.SimpleJsonApiEnvelope;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.net.MalformedURLException;
@@ -34,13 +35,7 @@ public class LinksDeserializer {
         while(linksFields.hasNext()) {
             String field = linksFields.next();
             String value = linksNode.get(field).textValue();
-            try {
-                jsonApiEnvelope.addLink(field, new URL(value));
-            } catch(MalformedURLException e) {
-                String issue = "Encountered issue deserializing link with key: " + field + " and value (URL): " + value +
-                        " ... however, the value does not appear to be a valid URL.";
-                throw new IllegalStateException(issue, e);
-            }
+            jsonApiEnvelope.addLink(field, value);
         }
     }
 

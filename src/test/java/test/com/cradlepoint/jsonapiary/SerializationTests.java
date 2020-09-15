@@ -1,10 +1,9 @@
 package test.com.cradlepoint.jsonapiary;
 
 import com.cradlepoint.jsonapiary.JsonApiModule;
-import com.cradlepoint.jsonapiary.envelopes.JsonApiEnvelope;
-import com.cradlepoint.jsonapiary.envelopes.JsonApiSerializationOptions;
+import com.cradlepoint.jsonapiary.envelopes.JsonApiOptions;
+import com.cradlepoint.jsonapiary.envelopes.SimpleJsonApiEnvelope;
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.junit.Assert;
@@ -13,8 +12,8 @@ import test.com.cradlepoint.jsonapiary.pojos.*;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 public class SerializationTests {
 
@@ -29,7 +28,7 @@ public class SerializationTests {
     /////////////////
 
     public SerializationTests() {
-        JsonApiModule jsonApiModule = new JsonApiModule(
+        JsonApiModule jsonApiModule = new JsonApiModule(Arrays.asList(
                 SimpleObject.class,
                 SimpleSubObject.class,
                 SimpleNestedSubObject.class,
@@ -37,10 +36,11 @@ public class SerializationTests {
                 ABaseClass.class,
                 AChildClass.class,
                 TypeWithALink.class,
-                ObjectWithMapAttribute.class);
+                ObjectWithMapAttribute.class));
 
         objectMapper = new ObjectMapper();
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        objectMapper.enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         objectMapper.registerModule(jsonApiModule);
     }
@@ -68,7 +68,7 @@ public class SerializationTests {
         singleLinkNode3.setLinkNode(singleLinkNode1);
 
         // Serialize //
-        String json = objectMapper.writeValueAsString(new JsonApiEnvelope<SingleLinkNode>(singleLinkNode1));
+        String json = objectMapper.writeValueAsString(new SimpleJsonApiEnvelope<SingleLinkNode>(singleLinkNode1));
         Assert.assertNotNull(json);
         Assert.assertTrue(json.equals("{\n" +
                 "  \"data\" : {\n" +
@@ -144,7 +144,7 @@ public class SerializationTests {
         simpleNestedSubObject.setMetaThing(simpleObject2);
 
         // First Serialize //
-        String json = objectMapper.writeValueAsString(new JsonApiEnvelope<SimpleObject>(simpleObject));
+        String json = objectMapper.writeValueAsString(new SimpleJsonApiEnvelope<SimpleObject>(simpleObject));
         Assert.assertNotNull(json);
         Assert.assertTrue(json.equals("{\n" +
                 "  \"data\" : {\n" +
@@ -293,7 +293,7 @@ public class SerializationTests {
             simpleObjectList.add(simpleObject);
         }
 
-        JsonApiEnvelope<List<SimpleObject>> envelope = new JsonApiEnvelope<List<SimpleObject>>(simpleObjectList);
+        SimpleJsonApiEnvelope<List<SimpleObject>> envelope = new SimpleJsonApiEnvelope<List<SimpleObject>>(simpleObjectList);
 
         // Serialize and Validate //
         String json = objectMapper.writeValueAsString(envelope);
@@ -397,7 +397,7 @@ public class SerializationTests {
         SimpleObject simpleObject = new SimpleObject();
         simpleObject.setId(666l);
         simpleObject.setAttribute("the attribute of the beast.");
-        JsonApiEnvelope<SimpleObject> jsonApiEnvelope = new JsonApiEnvelope<SimpleObject>(simpleObject);
+        SimpleJsonApiEnvelope<SimpleObject> jsonApiEnvelope = new SimpleJsonApiEnvelope<SimpleObject>(simpleObject);
         jsonApiEnvelope.addLink("google", new URL("http://www.google.com"));
         jsonApiEnvelope.addLink("what is jsonapi", new URL("https://www.google.com/search?q=jsonapi&ie=utf-8&oe=utf-8"));
 
@@ -431,7 +431,7 @@ public class SerializationTests {
         SimpleObject simpleObject1 = new SimpleObject();
         simpleObject1.setId(1l);
         simpleObject1.setAttribute("O.N.E.");
-        JsonApiEnvelope<SimpleObject> jsonApiEnvelope = new JsonApiEnvelope<SimpleObject>(simpleObject1);
+        SimpleJsonApiEnvelope<SimpleObject> jsonApiEnvelope = new SimpleJsonApiEnvelope<SimpleObject>(simpleObject1);
 
         jsonApiEnvelope.addMeta("top-LEVEL-meta-THING", "this is a fancy thing!");
         jsonApiEnvelope.addMeta("helllllo", "good! buy!");
@@ -473,7 +473,7 @@ public class SerializationTests {
         aChildClass.setMetaInt(21);
 
         // Serialize and Verify //
-        String json = objectMapper.writeValueAsString(new JsonApiEnvelope<AChildClass>(aChildClass));
+        String json = objectMapper.writeValueAsString(new SimpleJsonApiEnvelope<AChildClass>(aChildClass));
         Assert.assertNotNull(json);
         Assert.assertTrue(json.equals("{\n" +
                 "  \"data\" : {\n" +
@@ -518,7 +518,7 @@ public class SerializationTests {
         typeWithABoolean.setBool(false);
 
         // Serialize and Verify //
-        String json = objectMapper.writeValueAsString(new JsonApiEnvelope<TypeWithABoolean>(typeWithABoolean));
+        String json = objectMapper.writeValueAsString(new SimpleJsonApiEnvelope<TypeWithABoolean>(typeWithABoolean));
         Assert.assertNotNull(json);
         Assert.assertTrue(json.equals("{\n" +
                 "  \"data\" : {\n" +
@@ -549,7 +549,7 @@ public class SerializationTests {
         }
 
         // Serialize and Verify //
-        String json  = objectMapper.writeValueAsString(new JsonApiEnvelope<List<SimpleObject>>(simpleObjectList));
+        String json  = objectMapper.writeValueAsString(new SimpleJsonApiEnvelope<List<SimpleObject>>(simpleObjectList));
         Assert.assertNotNull(json);
         Assert.assertTrue(json.equals("{\n" +
                 "  \"data\" : [ {\n" +
@@ -691,7 +691,7 @@ public class SerializationTests {
         }
 
         // Serialize and Verify //
-        String json  = objectMapper.writeValueAsString(new JsonApiEnvelope<List<SimpleObject>>(simpleObjectList, JsonApiSerializationOptions.OMIT_INCLUDED_BLOCK));
+        String json  = objectMapper.writeValueAsString(new SimpleJsonApiEnvelope<List<SimpleObject>>(simpleObjectList, JsonApiOptions.OMIT_INCLUDED_BLOCK));
         Assert.assertNotNull(json);
         Assert.assertTrue(json.equals("{\n" +
                 "  \"data\" : [ {\n" +
@@ -780,7 +780,7 @@ public class SerializationTests {
         typeWithALink.setLink(link);
 
         // Serialize and Verify //
-        String json = objectMapper.writeValueAsString(new JsonApiEnvelope<TypeWithALink>(typeWithALink));
+        String json = objectMapper.writeValueAsString(new SimpleJsonApiEnvelope<TypeWithALink>(typeWithALink));
 
         Assert.assertNotNull(json);
         Assert.assertTrue(json.equals("{\n" +
@@ -805,7 +805,7 @@ public class SerializationTests {
         typeWithALink.setLink(link);
 
         // Serialize and Verify //
-        String json = objectMapper.writeValueAsString(new JsonApiEnvelope<TypeWithALink>(typeWithALink));
+        String json = objectMapper.writeValueAsString(new SimpleJsonApiEnvelope<TypeWithALink>(typeWithALink));
 
         Assert.assertNotNull(json);
         Assert.assertTrue(json.equals("{\n" +
@@ -818,32 +818,6 @@ public class SerializationTests {
                 "  }\n" +
                 "}"));
 
-    }
-
-    @Test(expected = JsonMappingException.class)
-    public void typeWithLinkStringNotUrlTest() throws Exception {
-        // Init Test Objects //
-        TypeWithALink typeWithALink = new TypeWithALink();
-        typeWithALink.setId("abcd-efgh-ijkl-mnop");
-
-        String link = "this is not a URL!";
-        typeWithALink.setLink(link);
-
-        // Serialize and Verify //
-        String json = objectMapper.writeValueAsString(new JsonApiEnvelope<TypeWithALink>(typeWithALink));
-    }
-
-    @Test(expected = JsonMappingException.class)
-    public void typeWithLinkObjectToStringNotUrlTest() throws Exception {
-        // Init Test Objects //
-        TypeWithALink typeWithALink = new TypeWithALink();
-        typeWithALink.setId("abcd-efgh-ijkl-mnop");
-
-        UUID link = UUID.randomUUID();
-        typeWithALink.setLink(link);
-
-        // Serialize and Verify //
-        String json = objectMapper.writeValueAsString(new JsonApiEnvelope<TypeWithALink>(typeWithALink));
     }
 
     @Test
@@ -866,7 +840,7 @@ public class SerializationTests {
         singleLinkNode3.setLinkNode(null);
 
         // Serialize //
-        String json = objectMapper.writeValueAsString(new JsonApiEnvelope<SingleLinkNode>(singleLinkNode1));
+        String json = objectMapper.writeValueAsString(new SimpleJsonApiEnvelope<SingleLinkNode>(singleLinkNode1));
         Assert.assertNotNull(json);
         Assert.assertTrue(json.equals("{\n" +
                 "  \"data\" : {\n" +
@@ -932,7 +906,7 @@ public class SerializationTests {
         object.addToMap("foobar", "and grill");
 
         // Serialize //
-        String json = objectMapper.writeValueAsString(new JsonApiEnvelope<ObjectWithMapAttribute>(object));
+        String json = objectMapper.writeValueAsString(new SimpleJsonApiEnvelope<ObjectWithMapAttribute>(object));
 
         Assert.assertTrue(json.equals("{\n" +
                 "  \"data\" : {\n" +

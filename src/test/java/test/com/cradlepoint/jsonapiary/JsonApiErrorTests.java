@@ -27,6 +27,7 @@ public class JsonApiErrorTests {
     public JsonApiErrorTests() {
         objectMapper = new ObjectMapper();
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        objectMapper.enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         objectMapper.registerModule(new JsonApiModule());
     }

@@ -1,6 +1,6 @@
 package test.com.cradlepoint.jsonapiary;
 
-import com.cradlepoint.jsonapiary.envelopes.JsonApiEnvelope;
+import com.cradlepoint.jsonapiary.envelopes.SimpleJsonApiEnvelope;
 import org.junit.Test;
 import test.com.cradlepoint.jsonapiary.pojos.SimpleObject;
 
@@ -21,12 +21,12 @@ public class EnvelopeTests {
 
     @Test
     public void SingleObjectHappyPathTest() throws Exception {
-        new JsonApiEnvelope<SimpleObject>(new SimpleObject());
+        new SimpleJsonApiEnvelope<SimpleObject>(new SimpleObject());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void SingleObjectNonAnnotatedTypeTest() throws Exception {
-        new JsonApiEnvelope<InstantiationException>(new InstantiationException());
+        new SimpleJsonApiEnvelope<InstantiationException>(new InstantiationException());
     }
 
     @Test
@@ -35,7 +35,7 @@ public class EnvelopeTests {
         for(int i1 = 0; i1 < 16; i1++) {
             simpleObjectList.add(new SimpleObject());
         }
-        new JsonApiEnvelope<List<SimpleObject>>(simpleObjectList);
+        new SimpleJsonApiEnvelope<List<SimpleObject>>(simpleObjectList);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -45,7 +45,7 @@ public class EnvelopeTests {
             simpleObjectList.add(new SimpleObject());
         }
         simpleObjectList.add(new InstantiationException());
-        new JsonApiEnvelope<InstantiationException>(new InstantiationException());
+        new SimpleJsonApiEnvelope<InstantiationException>(new InstantiationException());
     }
 
 }

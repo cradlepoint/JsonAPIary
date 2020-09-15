@@ -11,12 +11,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public class JsonApiEnvelopeDeserializer extends StdDeserializer<JsonApiEnvelope> {
+public class JsonApiEnvelopeDeserializer<T extends JsonApiEnvelope> extends StdDeserializer<T> {
 
     ////////////////
     // Attributes //
@@ -29,19 +31,13 @@ public class JsonApiEnvelopeDeserializer extends StdDeserializer<JsonApiEnvelope
     /////////////////
 
     /**
-     * private void constructor
-     */
-    private JsonApiEnvelopeDeserializer() {
-        super(JsonApiEnvelope.class);
-    }
-
-    /**
      * Default constructor taking in JsonAPI type map
      * @param jsonApiTypeMap
      */
     public JsonApiEnvelopeDeserializer(
+            Class<T> type,
             Map<String, Class> jsonApiTypeMap) {
-        super(JsonApiEnvelope.class);
+        super(type);
         this.jsonApiTypeMap = jsonApiTypeMap;
     }
 
@@ -57,7 +53,7 @@ public class JsonApiEnvelopeDeserializer extends StdDeserializer<JsonApiEnvelope
      * @throws IOException
      * @throws JsonProcessingException
      */
-    public JsonApiEnvelope deserialize(
+    public T deserialize(
             JsonParser jsonParser,
             DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
         // Convert to tree //
@@ -90,7 +86,8 @@ public class JsonApiEnvelopeDeserializer extends StdDeserializer<JsonApiEnvelope
         }
 
         // Construct the Envelop from deserialized data //
-        JsonApiEnvelope jsonApiEnvelope = new JsonApiEnvelope(dataObject);
+        T jsonApiEnvelope = createT();
+        jsonApiEnvelope.setData(dataObject);
 
         // Deserialize the top-level links //
         if(linksNode != null && !linksNode.isNull()) {
@@ -112,6 +109,28 @@ public class JsonApiEnvelopeDeserializer extends StdDeserializer<JsonApiEnvelope
         }
 
         return jsonApiEnvelope;
+    }
+
+    ///////////////////////
+    // Protected Methods //
+    ///////////////////////
+
+    /**
+     * Reflectively create a new Instance of the JsonApiEnvelope implementation. Feel free to override
+     * for reasons (such as performance) if desired.
+     * @return
+     */
+    protected T createT() {
+        try {
+            Constructor construtor = _valueClass.getConstructor();
+            return (T) construtor.newInstance();
+        } catch (NoSuchMethodException e) {
+            String issue = "Class " + _valueClass.getSimpleName() + " has no void constructor.";
+            throw new IllegalArgumentException(issue, e);
+        } catch (IllegalAccessException | InstantiationException | InvocationTargetException e) {
+            String issue = "Class " + _valueClass.getSimpleName() + " must have a public void constructor";
+            throw new IllegalArgumentException(issue, e);
+        }
     }
 
 }

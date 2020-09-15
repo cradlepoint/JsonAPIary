@@ -3,12 +3,15 @@ package com.cradlepoint.jsonapiary;
 import com.cradlepoint.jsonapiary.annotations.JsonApiType;
 import com.cradlepoint.jsonapiary.deserializers.JsonApiEnvelopeDeserializer;
 import com.cradlepoint.jsonapiary.envelopes.JsonApiEnvelope;
+import com.cradlepoint.jsonapiary.envelopes.SimpleJsonApiEnvelope;
 import com.cradlepoint.jsonapiary.serializers.JsonApiEnvelopeSerializer;
 import com.cradlepoint.jsonapiary.serializers.JsonApiErrorSerializer;
 import com.fasterxml.jackson.core.json.PackageVersion;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 
 public class JsonApiModule extends SimpleModule {
@@ -18,7 +21,6 @@ public class JsonApiModule extends SimpleModule {
     ////////////////
 
     private static final String MODULE_NAME = "jsonapiary";
-
     private Map<String, Class> jsonApiTypeMap;
 
     /////////////////
@@ -26,17 +28,41 @@ public class JsonApiModule extends SimpleModule {
     /////////////////
 
     /**
-     * Private void Constructor
+     * Constructor
      */
-    private JsonApiModule() { }
+    public JsonApiModule() {
+        super(PackageVersion.VERSION);
+        init(SimpleJsonApiEnvelope.class, new ArrayList<Class>());
+    }
 
     /**
-     * Constructor, receives types that have been JsonAPIary annotated.
+     * Constructor receiving list of types that have been JsonAPIary annotated.
      * @param jsonApiTypes
      */
-    public JsonApiModule(Class ... jsonApiTypes) {
+    public JsonApiModule(List<Class> jsonApiTypes) {
         super(PackageVersion.VERSION);
+        init(SimpleJsonApiEnvelope.class, jsonApiTypes);
+    }
 
+    /**
+     * Constructor, receives both envelope type and types that have been JsonAPIary annotated.
+     * @param jsonApiTypes
+     */
+    public JsonApiModule(Class<? extends JsonApiEnvelope> envelopeType, List<Class> jsonApiTypes) {
+        super(PackageVersion.VERSION);
+        init(envelopeType, jsonApiTypes);
+    }
+
+    /////////////////////
+    // Private Methods //
+    /////////////////////
+
+    /**
+     * Initialize JsonApi Module
+     * @param envelopeType
+     * @param jsonApiTypes
+     */
+    private void init(Class<? extends JsonApiEnvelope> envelopeType, List<Class> jsonApiTypes) {
         // Generate Type Map //
         jsonApiTypeMap = new Hashtable<String, Class>();
         if(jsonApiTypes != null) {
@@ -74,7 +100,7 @@ public class JsonApiModule extends SimpleModule {
 
         // Register Envelope Serializers/Deserializers //
         this.addSerializer(new JsonApiEnvelopeSerializer());
-        this.addDeserializer(JsonApiEnvelope.class, new JsonApiEnvelopeDeserializer(jsonApiTypeMap));
+        this.addDeserializer(envelopeType, new JsonApiEnvelopeDeserializer(envelopeType, jsonApiTypeMap));
         this.addSerializer(new JsonApiErrorSerializer());
     }
 
