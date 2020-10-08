@@ -10,6 +10,7 @@ import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class DeserializationUtilities {
 
@@ -264,7 +265,7 @@ public class DeserializationUtilities {
         Class idType = idField.getType();
         JsonNode idNode = jsonNode.get(JsonApiKeyConstants.ID_KEY);
         if(idNode == null || idNode.isNull()) {
-            id = null;
+            id = UUID.randomUUID(); // The UUID here not be used as part of deserialization, but necessary to ensure all elements with null IDs are unique
         } else if(idType == String.class) {
             id = idNode.asText();
         } else if(idType == Integer.class || idType == int.class) {
@@ -308,6 +309,12 @@ public class DeserializationUtilities {
         }
 
         Object id = fetchIdFromNode(objectType, jsonNode);
+
+        // Short circuit if ID is UUID type //
+        if(id instanceof UUID) {
+            // This object really had a null ID, nothing to do here. //
+            return;
+        }
 
         // Attempt to set the ID on the Field directly //
         try {
