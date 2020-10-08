@@ -10,6 +10,7 @@ import org.junit.Test;
 import test.com.cradlepoint.jsonapiary.pojos.*;
 
 import java.util.Arrays;
+import java.util.List;
 
 public class DeserializationTests {
 
@@ -61,6 +62,40 @@ public class DeserializationTests {
         Assert.assertNotNull(jsonApiEnvelope);
         Assert.assertNotNull(jsonApiEnvelope.getData());
         Assert.assertEquals(false, jsonApiEnvelope.getData().isBool());
+    }
+
+    @Test
+    public void listDeserializationTest() throws Exception {
+        // Init Test Objects //
+        String json = "{\n" +
+                "  \"data\" : [ {\n" +
+                "    \"type\" : \"TypeWithABoolean\",\n" +
+                "    \"attributes\" : {\n" +
+                "      \"bool\" : true\n" +
+                "    }\n" +
+                "  }, {\n" +
+                "    \"type\" : \"TypeWithABoolean\",\n" +
+                "    \"attributes\" : {\n" +
+                "      \"bool\" : false\n" +
+                "    }\n" +
+                "  } ]\n" +
+                "}";
+
+        // Deserialize and Verify //
+        SimpleJsonApiEnvelope<List> jsonApiEnvelope = objectMapper.readValue(json, SimpleJsonApiEnvelope.class);
+        Assert.assertEquals(2, jsonApiEnvelope.getData().size());
+        boolean foundTrue = false;
+        boolean foundFalse = false;
+        for(TypeWithABoolean typeWithABoolean :  (List<TypeWithABoolean>) jsonApiEnvelope.getData()) {
+            Assert.assertNull(typeWithABoolean.getId());
+            if(typeWithABoolean.isBool()) {
+                foundTrue = true;
+            } else {
+                foundFalse = true;
+            }
+        }
+        Assert.assertTrue(foundTrue);
+        Assert.assertTrue(foundFalse);
     }
 
 }
