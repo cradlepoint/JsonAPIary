@@ -45,7 +45,7 @@
 		<!-- Dependency Versions -->
 		<jackson.version>2.11.2</jackson.version>
 		<apache.commons.version>3.11</apache.commons.version>
-		<junit.version>4.13</junit.version>
+		<junit.version>4.13.1</junit.version>
 	</properties>
 
 	<dependencyManagement>
